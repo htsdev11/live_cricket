@@ -8,16 +8,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Placeholders, overridden by config/local_settings.py.
-SECRET_KEY = 'change-me-in-local-settings'
-DB_PASSWORD = ''
-
-try:
-    from .local_settings import *  # noqa: F401,F403
-except ImportError:
-    pass
-
+SECRET_KEY = '96spn_o9m@c_5rc)@m$@zqm3w2#krsc6u@apmytk8x1btg+ufm'
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # ICC Sportz API client ID (ICC may rotate it). Leave blank to auto-discover.
 ICC_CLIENT_ID = 'tPZJbRgIub3Vua93/DWtyQ=='
@@ -59,10 +52,9 @@ DATABASES = {'default': {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'icc_cricket',
     'USER': 'icc_user',
-    'PASSWORD': DB_PASSWORD,
+    'PASSWORD': 'cricket@123',
     'HOST': 'localhost',
     'PORT': '5432',
-    'CONN_MAX_AGE': 60,
 }}
 
 
@@ -78,7 +70,17 @@ REST_FRAMEWORK = {
 
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Karachi'
+TIME_ZONE = 'UTC'
 USE_TZ = True
-STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
