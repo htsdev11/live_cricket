@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Local secrets (see config/local_settings.example.py)
+config/local_settings.py
+
+# Sync logs (cron scripts)
+logs/
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/*.tmp.*
+
+# Django
+*.sqlite3
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Ignore ALL migration files that start with digits (0001, 0002, etc.)
+*/migrations/[0-9][0-9][0-9][0-9]_.py
+*/migrations/[0-9][0-9][0-9][0-9]_.pyc
+# But keep __init__.py inside migrations folder
+!**/migrations/__init__.py
+# Ignore migration files
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Ignore compiled migration files
+*/migrations/*.pyc
+
+# Ignore all __pycache__ folders and compiled Python files
+**/__pycache__/
+*.pyc

@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "ICC Cricket API",
+    "description": "Read-only REST API for ICC matches.\n\nSetup:\n1. Create a token: `python manage.py drf_create_token <username>`\n2. Paste it into the collection variable `token`.\n3. Set `match_id` to an ICC match ID that exists in your database.\n\nAll requests inherit `Authorization: Token {{token}}` from the collection, except those in the \"Edge cases\" folder that test auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "Authorization", "type": "string" },
+      { "key": "value", "value": "Token {{token}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "token", "value": "paste-your-token-here" },
+    { "key": "match_id", "value": "271651" }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response is JSON', function () {",
+          "    pm.response.to.have.header('Content-Type');",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Matches",
+      "item": [
+        {
+          "name": "List matches",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Paginated shape', () => {",
+                  "    pm.expect(body).to.have.keys('count', 'next', 'previous', 'results');",
+                  "    pm.expect(body.results).to.be.an('array');",
+                  "});",
+                  "if (body.results && body.results.length) {",
+                  "    pm.collectionVariables.set('match_id', body.results[0].icc_id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", ""]
+            },
+            "description": "All matches, newest first. 25 per page by default. Also stores the first match's ID in `match_id`."
+          }
+        },
+        {
+          "name": "List matches - all filters",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?status=completed&format=ODI&team=Pakistan&series=&from_date=2026-11-01&to_date=2026-11-30&q=&page=1&page_size=25",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", ""],
+              "query": [
+                { "key": "status", "value": "completed", "description": "upcoming | live | completed | other (case-insensitive)" },
+                { "key": "format", "value": "ODI", "description": "Match format, case-insensitive: ODI, T20I, Test..." },
+                { "key": "team", "value": "Pakistan", "description": "Team name contains, or exact short name (PAK)" },
+                { "key": "series", "value": "", "description": "Series name contains", "disabled": true },
+                { "key": "from_date", "value": "2026-11-01", "description": "YYYY-MM-DD, inclusive" },
+                { "key": "to_date", "value": "2026-11-30", "description": "YYYY-MM-DD, inclusive" },
+                { "key": "q", "value": "", "description": "Search team, series and venue names", "disabled": true },
+                { "key": "page", "value": "1", "description": "Page number, or 'last'" },
+                { "key": "page_size", "value": "25", "description": "1-100" }
+              ]
+            },
+            "description": "Every supported filter. Disable the ones you don't need."
+          }
+        },
+        {
+          "name": "Search matches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?q=India&page=1&page_size=25",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", ""],
+              "query": [
+                { "key": "q", "value": "India" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Live matches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/live/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", "live", ""]
+            }
+          }
+        },
+        {
+          "name": "Upcoming matches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/upcoming/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", "upcoming", ""]
+            },
+            "description": "Sorted soonest first."
+          }
+        },
+        {
+          "name": "Completed matches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/completed/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", "completed", ""]
+            }
+          }
+        },
+        {
+          "name": "Match detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Has innings', () => pm.expect(body.innings).to.be.an('array'));",
+                  "pm.test('Raw ICC data hidden', () => {",
+                  "    pm.expect(body).to.not.have.property('raw_scorecard');",
+                  "    pm.expect(body).to.not.have.property('raw_schedule');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/{{match_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", "{{match_id}}", ""]
+            },
+            "description": "Full scorecard: innings, batting, bowling, partnerships, fall of wickets, notes."
+          }
+        },
+        {
+          "name": "Match snapshots",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/matches/{{match_id}}/snapshots/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "matches", "{{match_id}}", "snapshots", ""]
+            },
+            "description": "Up to 100 most recent score snapshots (only stored when sync runs with --snapshots)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge cases",
+      "item": [
+        {
+          "name": "No token - 401",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('401', () => pm.response.to.have.status(401));"] } }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/matches/", "host": ["{{base_url}}"], "path": ["api", "matches", ""] }
+          }
+        },
+        {
+          "name": "Bad token - 401",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('401', () => pm.response.to.have.status(401));"] } }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Token invalid-token" }],
+            "url": { "raw": "{{base_url}}/api/matches/", "host": ["{{base_url}}"], "path": ["api", "matches", ""] }
+          }
+        },
+        {
+          "name": "Invalid status - 400",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('400', () => pm.response.to.have.status(400));", "pm.test('Mentions status', () => pm.expect(pm.response.json()).to.have.property('status'));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?status=bogus",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "status", "value": "bogus" }]
+            }
+          }
+        },
+        {
+          "name": "Uppercase status - 200",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?status=LIVE",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "status", "value": "LIVE" }]
+            }
+          }
+        },
+        {
+          "name": "Bad date format - 400",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('400', () => pm.response.to.have.status(400));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?from_date=11-04-2026",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "from_date", "value": "11-04-2026" }]
+            }
+          }
+        },
+        {
+          "name": "Impossible date - 400",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('400', () => pm.response.to.have.status(400));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?from_date=2026-02-30",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "from_date", "value": "2026-02-30" }]
+            }
+          }
+        },
+        {
+          "name": "Page out of range - 404",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('404', () => pm.response.to.have.status(404));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?page=99999",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "page", "value": "99999" }]
+            }
+          }
+        },
+        {
+          "name": "Page size over max (capped at 100)",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('At most 100 results', () => pm.expect(pm.response.json().results.length).to.be.at.most(100));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/?page_size=1000",
+              "host": ["{{base_url}}"], "path": ["api", "matches", ""],
+              "query": [{ "key": "page_size", "value": "1000" }]
+            }
+          }
+        },
+        {
+          "name": "Unknown match - 404",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('404', () => pm.response.to.have.status(404));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/matches/does-not-exist/",
+              "host": ["{{base_url}}"], "path": ["api", "matches", "does-not-exist", ""]
+            }
+          }
+        },
+        {
+          "name": "POST not allowed - 405",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('405', () => pm.response.to.have.status(405));"] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{base_url}}/api/matches/", "host": ["{{base_url}}"], "path": ["api", "matches", ""] }
+          }
+        }
+      ]
+    }
+  ]
+}
