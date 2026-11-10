@@ -3,12 +3,22 @@
 # with scorecards for live and completed matches.
 #
 # crontab entry (runs at minute 0 of every hour):
-#   0 * * * * /home/tayyab-saeed/PycharmProjects/icc_django_postgres_project/run_matches.sh
+#   0 * * * * /home/nativesol/live_cricket/run_matches.sh
 
 set -u
 
-PROJECT_DIR="/home/tayyab-saeed/PycharmProjects/icc_django_postgres_project"
-PYTHON="$PROJECT_DIR/venv/bin/python"
+# Project folder = the folder this script lives in, so the same script works
+# locally and on the server (/home/nativesol/live_cricket).
+PROJECT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+
+# Use the project virtualenv (venv/ or .venv/); fall back to system python3.
+if [ -x "$PROJECT_DIR/venv/bin/python" ]; then
+    PYTHON="$PROJECT_DIR/venv/bin/python"
+elif [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    PYTHON="$PROJECT_DIR/.venv/bin/python"
+else
+    PYTHON="$(command -v python3)"
+fi
 LOG_DIR="$PROJECT_DIR/logs"
 LOG_FILE="$LOG_DIR/matches.log"
 LOCK_FILE="/tmp/icc_sync_matches.lock"

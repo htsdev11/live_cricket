@@ -5,12 +5,22 @@
 # and the script runs the sync twice: at :00 and at :30.
 #
 # crontab entry:
-#   * * * * * /home/tayyab-saeed/PycharmProjects/icc_django_postgres_project/run_live.sh
+#   * * * * * /home/nativesol/live_cricket/run_live.sh
 
 set -u
 
-PROJECT_DIR="/home/tayyab-saeed/PycharmProjects/icc_django_postgres_project"
-PYTHON="$PROJECT_DIR/venv/bin/python"
+# Project folder = the folder this script lives in, so the same script works
+# locally and on the server (/home/nativesol/live_cricket).
+PROJECT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+
+# Use the project virtualenv (venv/ or .venv/); fall back to system python3.
+if [ -x "$PROJECT_DIR/venv/bin/python" ]; then
+    PYTHON="$PROJECT_DIR/venv/bin/python"
+elif [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    PYTHON="$PROJECT_DIR/.venv/bin/python"
+else
+    PYTHON="$(command -v python3)"
+fi
 LOG_DIR="$PROJECT_DIR/logs"
 LOG_FILE="$LOG_DIR/live.log"
 LOCK_FILE="/tmp/icc_sync_live.lock"
